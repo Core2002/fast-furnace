@@ -11,6 +11,7 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.player.PlayerChatEvent
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 
@@ -19,6 +20,18 @@ import org.bukkit.inventory.ItemStack
  */
 class FurnaceListener : Listener {
     var fastFurnaceMap = hashMapOf<Triple<Int, Int, Int>, Int>()
+
+    @EventHandler
+    fun onPlayerSay(event: PlayerChatEvent) {
+        if (event.message.contains("快速熔炉")) {
+            val itemStack = ItemStack(Material.FURNACE)
+            val im = itemStack.itemMeta
+            im!!.lore = arrayListOf("快速熔炉", "4")
+            itemStack.itemMeta = im
+            event.player.inventory.addItem(itemStack)
+            event.player.sendMessage("已给予 【快速熔炉】")
+        }
+    }
 
     @EventHandler
     fun onInvOpen(event: InventoryOpenEvent) {
@@ -32,12 +45,12 @@ class FurnaceListener : Listener {
 
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
-        if (event.inventory.holder !is Furnace && (event.inventory.holder as Furnace).isFastFurnace())
-            return
-        val holder = event.inventory.holder as Furnace
-        if (holder.cookTimeTotal != 0) {
-            holder.cookTimeTotal = 0
-            holder.decrease()
+        if (event.inventory.holder is Furnace && (event.inventory.holder as Furnace).isFastFurnace()) {
+            val holder = event.inventory.holder as Furnace
+            if (holder.cookTimeTotal != 0) {
+                holder.cookTimeTotal = 0
+                holder.decrease()
+            }
         }
     }
 
