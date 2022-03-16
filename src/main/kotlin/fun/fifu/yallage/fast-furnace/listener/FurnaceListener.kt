@@ -36,11 +36,12 @@ class FurnaceListener : Listener {
 
     @EventHandler
     fun onInvOpen(event: InventoryOpenEvent) {
-        if (event.view.isFastFurnace()) {
-            event.player.sendMessage("你打开了一个快速熔炉")
+        if (event.inventory.location?.block?.isFastFurnace() == true) {
             event.player.closeInventory()
-            val createInventory = Bukkit.createInventory(event.inventory.holder, InventoryType.FURNACE, "快速熔炉")
+            val createInventory = Bukkit.createInventory(event.player, InventoryType.FURNACE, "快速熔炉")
             event.player.openInventory(createInventory)
+            val t = event.inventory.location?.block!!.toTriple()
+            event.player.sendMessage("你打开了${t}的快速熔炉，他的剩余次数是${fastFurnaceMap[t]}")
         }
     }
 
@@ -58,10 +59,9 @@ class FurnaceListener : Listener {
 
     @EventHandler
     fun onFastFurnacePlace(event: BlockPlaceEvent) {
-        val block = event.block
-        if (block.type == Material.FURNACE && event.itemInHand.isFastFurnace()) {
+        if (event.itemInHand.isFastFurnace()) {
             fastFurnaceMap[event.block.toTriple()] = event.itemInHand.getTheDurability()
-//            event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉")
+            event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
     }
 
@@ -71,13 +71,11 @@ class FurnaceListener : Listener {
         if (block.type == Material.FURNACE && block.isFastFurnace()) {
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf("快速熔炉", "4")
+            im!!.lore = arrayListOf("快速熔炉", "${fastFurnaceMap[block.toTriple()]}")
             itemStack.itemMeta = im
-//TODO
-
+            block.Drop(itemStack)
             fastFurnaceMap.remove(block.toTriple())
-
-//            event.player.sendMessage("你在${event.block.toTriple()}拆除了一个快速熔炉")
+            event.player.sendMessage("你在${event.block.toTriple()}拆除了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
     }
 
@@ -160,7 +158,8 @@ class FurnaceListener : Listener {
      * Drop the block
      * @param itemStack blocks to drop
      */
-    fun Block.Drop(itemStack: ItemStack){
-        //ToDo
+    fun Block.Drop(itemStack: ItemStack) {
+        type = Material.AIR
+        world.dropItem(location, itemStack)
     }
 }
