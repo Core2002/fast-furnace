@@ -37,22 +37,24 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onInvOpen(event: InventoryOpenEvent) {
         if (event.inventory.location?.block?.isFastFurnace() == true) {
-            event.player.closeInventory()
-            val createInventory = Bukkit.createInventory(event.player, InventoryType.FURNACE, "快速熔炉")
-            event.player.openInventory(createInventory)
             val t = event.inventory.location?.block!!.toTriple()
+//            val createInventory = Bukkit.createInventory(event.player, InventoryType.FURNACE, "快速熔炉")
+//            event.player.closeInventory()
+//            event.player.openInventory(createInventory)
             event.player.sendMessage("你打开了${t}的快速熔炉，他的剩余次数是${fastFurnaceMap[t]}")
         }
     }
 
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
-        if (event.view.isFastFurnace()) {
+        if (event.inventory.location!!.block.isFastFurnace()) {
             val holder = event.inventory.holder as Furnace
-            if (holder.cookTimeTotal != 0) {
-                holder.cookTimeTotal = 0
-                holder.block.decrease()
-            }
+            val t = event.inventory.location?.block!!.toTriple()
+
+            holder.cookTime = 400
+            event.whoClicked.sendMessage(holder.Echo())
+//            holder.block.decrease()
+            event.whoClicked.sendMessage("你在${t}快速熔炉，消费了一次，他的剩余次数是${fastFurnaceMap[t]}")
         }
     }
 
@@ -68,14 +70,15 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onFastFurnaceBreak(event: BlockBreakEvent) {
         val block = event.block
-        if (block.type == Material.FURNACE && block.isFastFurnace()) {
+        if (block.isFastFurnace()) {
+            val t = block.toTriple()
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf("快速熔炉", "${fastFurnaceMap[block.toTriple()]}")
+            im!!.lore = arrayListOf("快速熔炉", "${fastFurnaceMap[t]}")
             itemStack.itemMeta = im
             block.Drop(itemStack)
+            event.player.sendMessage("你在${t}拆除了一个快速熔炉，他的剩余次数是${fastFurnaceMap[t]}")
             fastFurnaceMap.remove(block.toTriple())
-            event.player.sendMessage("你在${event.block.toTriple()}拆除了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
     }
 
@@ -89,6 +92,7 @@ class FurnaceListener : Listener {
      * Return if the furnace is a  Fast Furnace
      * @return true or false
      */
+    @Deprecated("Can not get Inventory's title")
     fun InventoryView.isFastFurnace() = this is FurnaceInventory && title == "快速熔炉"
 
     /**
@@ -161,5 +165,14 @@ class FurnaceListener : Listener {
     fun Block.Drop(itemStack: ItemStack) {
         type = Material.AIR
         world.dropItem(location, itemStack)
+    }
+
+    fun Furnace.Echo(): String {
+        return """
+            customName=$customName
+            cookTime = $cookTime
+            cookTimeTotal = $cookTimeTotal
+            burnTime = $burnTime
+         """.trimIndent()
     }
 }
