@@ -62,7 +62,7 @@ class FurnaceListener : Listener {
     fun onFurnaceBurn(event: FurnaceBurnEvent) {
         if (event.block.isFastFurnace()) {
             val furnace = event.block.state as Furnace
-            furnace.burnTime = 1
+            furnace.burnTime = 0
             furnace.update()
         }
     }
@@ -74,7 +74,7 @@ class FurnaceListener : Listener {
     fun onFurnaceSmelt(event: FurnaceSmeltEvent) {
         if (event.block.isFastFurnace()) {
             val furnace = event.block.state as Furnace
-            furnace.cookTime = 199
+            furnace.cookTime = 0
             furnace.update()
             println("${event.block.toTriple()}的快速熔炉，消费了一次，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
@@ -86,7 +86,6 @@ class FurnaceListener : Listener {
             fastFurnaceMap[event.block.toTriple()] = event.itemInHand.getTheDurability()
             val furnace = event.block.state as Furnace
             furnace.customName = "快速熔炉"
-            furnace.cookTimeTotal = 1
             furnace.update()
             event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
@@ -101,9 +100,9 @@ class FurnaceListener : Listener {
             val im = itemStack.itemMeta
             im!!.lore = arrayListOf("快速熔炉", "${fastFurnaceMap[t]}")
             itemStack.itemMeta = im
+            event.player.sendMessage("你在${t}拆除了一个快速熔炉，他的剩余次数是${fastFurnaceMap[t]}")
             fastFurnaceMap.remove(block.toTriple())
             block.Drop(itemStack)
-            event.player.sendMessage("你在${t}拆除了一个快速熔炉，他的剩余次数是${fastFurnaceMap[t]}")
         }
     }
 
