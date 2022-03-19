@@ -144,7 +144,6 @@ class FurnaceListener : Listener {
     fun onInvOpen(event: InventoryOpenEvent) {
         if (event.inventory.location?.block?.isFastFurnace() == true) {
             val t = event.inventory.location?.block!!.toTriple()
-            event.player.sendMessage("你打开了${t}的快速熔炉，他的剩余次数是${readFastFurnace(t)}")
         }
     }
 
@@ -155,15 +154,6 @@ class FurnaceListener : Listener {
             val holder = furnaceInventory.holder!!
             holder.cookTime = 199
             holder.update(true, true)
-            println(
-                """
-                slot = ${event.slot}
-                slotType = ${event.slotType}
-                result = ${furnaceInventory.result}
-                smelting = ${furnaceInventory.smelting}
-            """.trimIndent()
-            )
-            event.whoClicked.sendMessage(furnaceInventory.holder!!.Echo())
         }
     }
 
@@ -174,21 +164,6 @@ class FurnaceListener : Listener {
     fun onFurnaceSmelt(event: FurnaceSmeltEvent) {
         if (event.block.isFastFurnace()) {
             event.block.decrease()
-            println("触发  反应结束")
-        }
-    }
-
-    /**
-     * 取出产物
-     */
-    @EventHandler
-    fun onFurnaceExtract(event: FurnaceExtractEvent) {
-        if (event.block.isFastFurnace()) {
-            println("触发  取出产物")
-//            val furnace = event.block.state as Furnace
-//
-//            furnace.update()
-            println("${event.block.toTriple()}的快速熔炉，消费了一次，他的剩余次数是${readFastFurnace(event.block.toTriple())}")
         }
     }
 
@@ -200,7 +175,6 @@ class FurnaceListener : Listener {
             furnace.customName = "快速熔炉"
             furnace.burnTime = Short.MAX_VALUE
             furnace.update()
-            event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉，他的剩余次数是${readFastFurnace(event.block.toTriple())}")
         }
     }
 
@@ -213,7 +187,6 @@ class FurnaceListener : Listener {
             val im = itemStack.itemMeta
             im!!.lore = arrayListOf("快速熔炉", "${readFastFurnace(t)}")
             itemStack.itemMeta = im
-            event.player.sendMessage("你在${t}拆除了一个快速熔炉，他的剩余次数是${readFastFurnace(t)}")
             removeFastFurnace(block.toTriple())
             block.Drop(itemStack)
         }
