@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.*
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
+import kotlin.concurrent.fixedRateTimer
 
 
 /**
@@ -47,9 +48,15 @@ class FurnaceListener : Listener {
     fun onInvClick(event: InventoryClickEvent) {
         if (event.inventory.location!!.block.isFastFurnace()) {
             val furnaceInventory = event.inventory as FurnaceInventory
-            println("""
+            val holder = furnaceInventory.holder!!
+            holder.cookTime = 199
+            holder.update(true, true)
+            println(
+                """
                 slot = ${event.slot}
                 slotType = ${event.slotType}
+                result = ${furnaceInventory.result}
+                smelting = ${furnaceInventory.smelting}
             """.trimIndent()
             )
             event.whoClicked.sendMessage(furnaceInventory.holder!!.Echo())
