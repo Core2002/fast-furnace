@@ -8,7 +8,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.*
-import org.bukkit.event.player.PlayerChatEvent
+import org.bukkit.event.player.AsyncPlayerChatEvent
+import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 
 
@@ -22,7 +23,8 @@ class FurnaceListener : Listener {
     }
 
     @EventHandler
-    fun onPlayerSay(event: PlayerChatEvent) {
+    fun onPlayerSay(event: AsyncPlayerChatEvent) {
+        event.player.sendMessage(event.message)
         if (event.message.contains("快速熔炉")) {
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
@@ -44,19 +46,13 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
         if (event.inventory.location!!.block.isFastFurnace()) {
-            event.whoClicked.sendMessage((event.inventory.location?.block!!.state as Furnace).Echo())
-        }
-    }
-
-    /**
-     * 燃料燃烧
-     */
-    @EventHandler
-    fun onFurnaceBurn(event: FurnaceBurnEvent) {
-        if (event.block.isFastFurnace()) {
-            val furnace = event.block.state as Furnace
-
-            furnace.update()
+            val furnaceInventory = event.inventory as FurnaceInventory
+            println("""
+                slot = ${event.slot}
+                slotType = ${event.slotType}
+            """.trimIndent()
+            )
+            event.whoClicked.sendMessage(furnaceInventory.holder!!.Echo())
         }
     }
 
@@ -66,9 +62,10 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onFurnaceSmelt(event: FurnaceSmeltEvent) {
         if (event.block.isFastFurnace()) {
-            val furnace = event.block.state as Furnace
-
-            furnace.update()
+            println("触发  反应结束")
+//            val furnace = event.block.state as Furnace
+//
+//            furnace.update()
         }
     }
 
@@ -78,9 +75,10 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onFurnaceExtract(event: FurnaceExtractEvent) {
         if (event.block.isFastFurnace()) {
-            val furnace = event.block.state as Furnace
-
-            furnace.update()
+            println("触发  取出产物")
+//            val furnace = event.block.state as Furnace
+//
+//            furnace.update()
             println("${event.block.toTriple()}的快速熔炉，消费了一次，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
     }
@@ -90,8 +88,8 @@ class FurnaceListener : Listener {
         if (event.itemInHand.isFastFurnace()) {
             fastFurnaceMap[event.block.toTriple()] = event.itemInHand.getTheDurability()
             val furnace = event.block.state as Furnace
-//            furnace.customName = "快速熔炉"
-
+            furnace.customName = "快速熔炉"
+            furnace.burnTime = Short.MAX_VALUE
             furnace.update()
             event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
