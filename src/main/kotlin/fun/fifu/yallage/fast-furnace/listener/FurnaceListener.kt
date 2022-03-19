@@ -1,6 +1,5 @@
 package `fun`.fifu.yallage.`fast-furnace`.listener
 
-import `fun`.fifu.yallage.`fast-furnace`.FastFurnace
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Furnace
@@ -8,15 +7,9 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.inventory.FurnaceBurnEvent
-import org.bukkit.event.inventory.FurnaceSmeltEvent
-import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.inventory.InventoryOpenEvent
+import org.bukkit.event.inventory.*
 import org.bukkit.event.player.PlayerChatEvent
-import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
-import org.bukkit.scheduler.BukkitRunnable
-import kotlin.concurrent.fixedRateTimer
 
 
 /**
@@ -62,19 +55,31 @@ class FurnaceListener : Listener {
     fun onFurnaceBurn(event: FurnaceBurnEvent) {
         if (event.block.isFastFurnace()) {
             val furnace = event.block.state as Furnace
-            furnace.burnTime = 0
+
             furnace.update()
         }
     }
 
     /**
-     * 烧完
+     * 反应结束
      */
     @EventHandler
     fun onFurnaceSmelt(event: FurnaceSmeltEvent) {
         if (event.block.isFastFurnace()) {
             val furnace = event.block.state as Furnace
-            furnace.cookTime = 0
+
+            furnace.update()
+        }
+    }
+
+    /**
+     * 取出产物
+     */
+    @EventHandler
+    fun onFurnaceExtract(event: FurnaceExtractEvent) {
+        if (event.block.isFastFurnace()) {
+            val furnace = event.block.state as Furnace
+
             furnace.update()
             println("${event.block.toTriple()}的快速熔炉，消费了一次，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
@@ -85,7 +90,8 @@ class FurnaceListener : Listener {
         if (event.itemInHand.isFastFurnace()) {
             fastFurnaceMap[event.block.toTriple()] = event.itemInHand.getTheDurability()
             val furnace = event.block.state as Furnace
-            furnace.customName = "快速熔炉"
+//            furnace.customName = "快速熔炉"
+
             furnace.update()
             event.player.sendMessage("你在${event.block.toTriple()}放置了一个快速熔炉，他的剩余次数是${fastFurnaceMap[event.block.toTriple()]}")
         }
