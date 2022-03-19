@@ -74,7 +74,7 @@ class FastFurnaceCommand : TabExecutor {
         } else {
             val sb = StringBuffer()
             helpMassage.values.forEach { sb.append(it).append("\n") }
-            player.sendMessage("FastFurnace By. 小白 uid:30924239")
+            player.sendMessage("FastFurnace By. 钟小白Core uid:30924239")
             player.sendMessage("帮助：/fast-furnace <命令>\n$sb")
             return true
         }
