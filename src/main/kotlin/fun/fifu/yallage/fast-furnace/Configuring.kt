@@ -34,7 +34,7 @@ object Configuring {
         // 读取配置文件
         try {
             val file = File("plugins/$pluginName/config.json")
-            val reader = BufferedReader(FileReader(file))
+            val reader = BufferedReader(FileReader(file, Charsets.UTF_8))
             SlimeLogger.info("配置文件加载中...")
             configz = gson.fromJson(reader, Config::class.java)
             // 反射检查服务器配置任意变量是否为空

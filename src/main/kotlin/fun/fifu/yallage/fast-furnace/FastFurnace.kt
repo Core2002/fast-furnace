@@ -1,6 +1,8 @@
 package `fun`.fifu.yallage.`fast-furnace`
 
+import `fun`.fifu.yallage.`fast-furnace`.command.FastFurnaceCommand
 import `fun`.fifu.yallage.`fast-furnace`.listener.FurnaceListener
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class FastFurnace : JavaPlugin() {
@@ -15,6 +17,7 @@ class FastFurnace : JavaPlugin() {
     override fun onEnable() {
         plugin = this
         server.pluginManager.registerEvents(FurnaceListener(), this)
+        Bukkit.getPluginCommand("fast-furnace")?.setExecutor(FastFurnaceCommand())
         logger.info("Fast Furnace plugin is Loaded. By:NekokeCore")
     }
 

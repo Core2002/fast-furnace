@@ -50,7 +50,7 @@ class FurnaceListener : Listener {
          * @return true or false
          */
         private fun ItemStack.isFastFurnace() =
-            type == Material.FURNACE && itemMeta?.lore?.get(0)?.contains("快速熔炉") == true
+            type == Material.FURNACE && itemMeta?.lore?.get(0)?.contains(Configuring.configz.lore_1) == true
 
         /**
          * Returns the durability of the Fast Furnace
@@ -100,11 +100,13 @@ class FurnaceListener : Listener {
          */
         fun Block.decrease() {
             val dur = getTheDurability()!! - 1
-            if (dur > 0)
+            if (dur > 0) {
                 setTheDurability(dur)
-            else {
+                location.world?.playSound(location, Configuring.configz.sound_use, 16.0f, 16.0f)
+            } else {
                 setTheDurability(0)
                 fastFurnaceMap.remove(Triple(x, y, z))
+                location.world?.playSound(location, Configuring.configz.sound_break, 16.0f, 16.0f)
                 type = Material.AIR
             }
         }
@@ -118,6 +120,10 @@ class FurnaceListener : Listener {
             world.dropItem(location, itemStack)
         }
 
+        /**
+         * Echo the Furnace's Properties and Fields
+         * @return Formatted Text
+         */
         private fun Furnace.Echo(): String {
             return """
             customName=$customName
@@ -126,17 +132,31 @@ class FurnaceListener : Listener {
             burnTime = $burnTime
          """.trimIndent()
         }
+
+        /**
+         * Get Fast Furnace 's Item Stack
+         * @return Fast Furnace Item Stack
+         */
+        fun getFastFurnace(): ItemStack {
+            val itemStack = ItemStack(Material.FURNACE)
+            val im = itemStack.itemMeta
+            im!!.setDisplayName(
+                Configuring.configz.display_name.replace(
+                    "{can_use_number}",
+                    Configuring.configz.can_use_number.toString()
+                )
+            )
+            im.lore = arrayListOf(Configuring.configz.lore_1, "${Configuring.configz.can_use_number}")
+            itemStack.itemMeta = im
+            return itemStack
+        }
     }
 
     @EventHandler
     fun onPlayerSay(event: AsyncPlayerChatEvent) {
         event.player.sendMessage(event.message)
         if (event.message.contains("快速熔炉")) {
-            val itemStack = ItemStack(Material.FURNACE)
-            val im = itemStack.itemMeta
-            im!!.lore = arrayListOf("快速熔炉", "${Configuring.configz.can_use_number}")
-            itemStack.itemMeta = im
-            event.player.inventory.addItem(itemStack)
+            event.player.inventory.addItem(getFastFurnace())
             event.player.sendMessage("已给予 【快速熔炉】")
         }
     }
@@ -158,9 +178,6 @@ class FurnaceListener : Listener {
         }
     }
 
-    /**
-     * 反应结束
-     */
     @EventHandler
     fun onFurnaceSmelt(event: FurnaceSmeltEvent) {
         if (event.block.isFastFurnace()) {
@@ -173,7 +190,7 @@ class FurnaceListener : Listener {
         if (event.itemInHand.isFastFurnace()) {
             createFastFurnace(event.block.toTriple(), event.itemInHand.getTheDurability())
             val furnace = event.block.state as Furnace
-            furnace.customName = "快速熔炉"
+            furnace.customName = Configuring.configz.custom_name
             furnace.burnTime = Short.MAX_VALUE
             furnace.update()
         }
@@ -186,7 +203,13 @@ class FurnaceListener : Listener {
             val t = block.toTriple()
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf("快速熔炉", "${readFastFurnace(t)}")
+            im!!.lore = arrayListOf(Configuring.configz.lore_1, "${readFastFurnace(t)}")
+            im.setDisplayName(
+                Configuring.configz.display_name.replace(
+                    "{can_use_number}",
+                    readFastFurnace(t).toString()
+                )
+            )
             itemStack.itemMeta = im
             removeFastFurnace(block.toTriple())
             block.Drop(itemStack)

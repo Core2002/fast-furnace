@@ -6,5 +6,20 @@ import lombok.Data
 @Data
 class Config {
     @SerializedName("can_use_number")
-    var can_use_number = 4
+    val can_use_number = 4
+
+    @SerializedName("display_name")
+    val display_name = "§a快速熔炉 剩余{can_use_number}次"
+
+    @SerializedName("custom_name")
+    val custom_name = "§a快速熔炉 剩余{can_use_number}次"
+
+    @SerializedName("lore_1")
+    val lore_1 = "这是一只快速熔炉"
+
+    @SerializedName("sound_use")
+    val sound_use = "entity.wolf.pant"
+
+    @SerializedName("sound_break")
+    val sound_break = "entity.wolf.hurt"
 }

@@ -1,3 +1,8 @@
 {
-  "can_use_number": 4
+  "can_use_number": 4,
+  "display_name": "§a快速熔炉 剩余{can_use_number}次",
+  "custom_name": "§b快速熔炉",
+  "lore_1": "这是一只快速熔炉",
+  "sound_use": "entity.wolf.pant",
+  "sound_break": "entity.wolf.hurt"
 }
