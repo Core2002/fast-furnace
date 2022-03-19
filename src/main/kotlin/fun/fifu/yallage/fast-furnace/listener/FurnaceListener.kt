@@ -1,5 +1,6 @@
 package `fun`.fifu.yallage.`fast-furnace`.listener
 
+import `fun`.fifu.yallage.`fast-furnace`.Configuring
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Furnace
@@ -133,7 +134,7 @@ class FurnaceListener : Listener {
         if (event.message.contains("快速熔炉")) {
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf("快速熔炉", "4")
+            im!!.lore = arrayListOf("快速熔炉", "${Configuring.configz.can_use_number}")
             itemStack.itemMeta = im
             event.player.inventory.addItem(itemStack)
             event.player.sendMessage("已给予 【快速熔炉】")

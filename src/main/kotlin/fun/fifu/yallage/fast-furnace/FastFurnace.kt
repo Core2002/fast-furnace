@@ -8,6 +8,10 @@ class FastFurnace : JavaPlugin() {
         lateinit var plugin: FastFurnace
     }
 
+    override fun onLoad() {
+        Configuring.loadConfig()
+    }
+
     override fun onEnable() {
         plugin = this
         server.pluginManager.registerEvents(FurnaceListener(), this)
