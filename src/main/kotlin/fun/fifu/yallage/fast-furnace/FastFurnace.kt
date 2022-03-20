@@ -4,10 +4,12 @@ import `fun`.fifu.yallage.`fast-furnace`.command.FastFurnaceCommand
 import `fun`.fifu.yallage.`fast-furnace`.listener.FurnaceListener
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitTask
 
 class FastFurnace : JavaPlugin() {
     companion object {
         lateinit var plugin: FastFurnace
+        lateinit var bigLoop: BukkitTask
     }
 
     override fun onLoad() {
@@ -22,6 +24,7 @@ class FastFurnace : JavaPlugin() {
     }
 
     override fun onDisable() {
+        bigLoop.cancel()
         logger.info("Fast Furnace plugin is Disabled. Thinks for use :)")
     }
 }

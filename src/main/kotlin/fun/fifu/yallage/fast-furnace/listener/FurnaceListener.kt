@@ -1,6 +1,8 @@
 package `fun`.fifu.yallage.`fast-furnace`.listener
 
 import `fun`.fifu.yallage.`fast-furnace`.Configuring
+import `fun`.fifu.yallage.`fast-furnace`.FastFurnace
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Furnace
@@ -11,6 +13,7 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.*
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
+import org.bukkit.scheduler.BukkitRunnable
 
 
 /**
@@ -22,7 +25,7 @@ class FurnaceListener : Listener {
         /**
          * This map is loaded with the coordinates and consumption status of the Fast Furnace
          */
-        private val fastFurnaceMap = hashMapOf<Triple<Int, Int, Int>, Int>()
+        val fastFurnaceMap = hashMapOf<Triple<Int, Int, Int>, Int>()
 
         /**
          * Read Fast Furnace number from location
@@ -184,6 +187,26 @@ class FurnaceListener : Listener {
          */
         fun Int.makeLore2String() = Configuring.configz.lore_2_prefix + this
 
+        init {
+            FastFurnace.bigLoop = object : BukkitRunnable() {
+                override fun run() {
+                    fastFurnaceMap.forEach { (t, _) ->
+                        Bukkit.getWorlds().forEach {
+                            val block = it.getBlockAt(t.first, t.second, t.third)
+                            if (block.isFastFurnace()) {
+                                try {
+                                    val furnaceInventory = (block.state as Furnace).inventory
+                                    val holder = furnaceInventory.holder!!
+                                    holder.cookTime = 199
+                                    holder.update(true, true)
+                                } catch (e: Exception) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }.runTaskTimer(FastFurnace.plugin, 20, 1)
+        }
     }
 
 //    @EventHandler
