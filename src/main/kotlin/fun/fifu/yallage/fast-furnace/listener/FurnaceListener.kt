@@ -9,7 +9,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.*
-import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 
@@ -20,20 +19,41 @@ import org.bukkit.inventory.ItemStack
 class FurnaceListener : Listener {
 
     companion object {
+        /**
+         * This map is loaded with the coordinates and consumption status of the Fast Furnace
+         */
         private val fastFurnaceMap = hashMapOf<Triple<Int, Int, Int>, Int>()
 
+        /**
+         * Read Fast Furnace number from location
+         * @param t the location
+         * @return frequency
+         */
         fun readFastFurnace(t: Triple<Int, Int, Int>): Int {
             return fastFurnaceMap[t]?.minus(1) ?: 0
         }
 
+        /**
+         * Create a Fast Furnace for location,
+         * @param t the location
+         * @param frequency Fast Furnace 's frequency
+         */
         fun createFastFurnace(t: Triple<Int, Int, Int>, frequency: Int) {
             fastFurnaceMap[t] = frequency + 1
         }
 
+        /**
+         * Expend one Fast Furnace from location
+         * @param t will location expend
+         */
         fun expendFastFurnace(t: Triple<Int, Int, Int>) {
             fastFurnaceMap[t] = fastFurnaceMap[t]?.minus(1) ?: 0
         }
 
+        /**
+         * Remove one Fast Furnace from location
+         * @param t location t will remove
+         */
         fun removeFastFurnace(t: Triple<Int, Int, Int>) {
             fastFurnaceMap.remove(t)
         }
@@ -64,6 +84,7 @@ class FurnaceListener : Listener {
 
         /**
          * Set the durability of the Fast Furnace
+         * @param dur can use number
          */
         private fun ItemStack.setTheDurability(dur: Int) {
             if (!isFastFurnace())
@@ -83,6 +104,7 @@ class FurnaceListener : Listener {
 
         /**
          * Set the durability of the Fast Furnace
+         * @param dur can use number
          */
         private fun Block.setTheDurability(dur: Int) {
             if (!isFastFurnace())
@@ -152,14 +174,14 @@ class FurnaceListener : Listener {
         }
     }
 
-    @EventHandler
-    fun onPlayerSay(event: AsyncPlayerChatEvent) {
-        event.player.sendMessage(event.message)
-        if (event.message.contains("快速熔炉")) {
-            event.player.inventory.addItem(getFastFurnace())
-            event.player.sendMessage("已给予 【快速熔炉】")
-        }
-    }
+//    @EventHandler
+//    fun onPlayerSay(event: AsyncPlayerChatEvent) {
+//        event.player.sendMessage(event.message)
+//        if (event.message.contains("快速熔炉")) {
+//            event.player.inventory.addItem(getFastFurnace())
+//            event.player.sendMessage("已给予 【快速熔炉】")
+//        }
+//    }
 
     @EventHandler
     fun onInvOpen(event: InventoryOpenEvent) {

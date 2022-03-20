@@ -17,6 +17,9 @@ class Config {
     @SerializedName("lore_1")
     val lore_1 = "这是一只快速熔炉"
 
+    @SerializedName("lore_2_prefix")
+    val lore_2_prefix = "§e"
+
     @SerializedName("sound_use")
     val sound_use = "entity.wolf.pant"
 
