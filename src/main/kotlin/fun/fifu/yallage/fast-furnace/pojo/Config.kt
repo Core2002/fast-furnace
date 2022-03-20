@@ -25,4 +25,7 @@ class Config {
 
     @SerializedName("sound_break")
     val sound_break = "entity.wolf.hurt"
+
+    @SerializedName("show_title_text")
+    val show_title_text = "§4快速熔炉 剩余{can_use_number}次"
 }

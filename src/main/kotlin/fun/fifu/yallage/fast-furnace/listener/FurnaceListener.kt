@@ -3,14 +3,19 @@ package `fun`.fifu.yallage.`fast-furnace`.listener
 import `fun`.fifu.yallage.`fast-furnace`.Configuring
 import `fun`.fifu.yallage.`fast-furnace`.FastFurnace
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Furnace
+import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.ArmorStand
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.inventory.*
+import org.bukkit.event.inventory.FurnaceSmeltEvent
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
@@ -26,6 +31,7 @@ class FurnaceListener : Listener {
          * This map is loaded with the coordinates and consumption status of the Fast Furnace
          */
         val fastFurnaceMap = hashMapOf<Triple<Int, Int, Int>, Int>()
+        val armorStandMap = hashMapOf<Triple<Int, Int, Int>, ArmorStand>()
 
         /**
          * Read Fast Furnace number from location
@@ -59,6 +65,7 @@ class FurnaceListener : Listener {
          */
         fun removeFastFurnace(t: Triple<Int, Int, Int>) {
             fastFurnaceMap.remove(t)
+            armorStandMap[t]?.remove()
         }
 
         /**
@@ -187,6 +194,47 @@ class FurnaceListener : Listener {
          */
         fun Int.makeLore2String() = Configuring.configz.lore_2_prefix + this
 
+        /**
+         * Make ArmorStand with Block
+         * @return ArmorStand Object
+         */
+        fun Block.makeArmorStand(): ArmorStand {
+            val t = toTriple()
+            val armorStand = world.spawn(
+                Location(world, t.first + 0.5, t.second - 0.5, t.third + 0.5),
+                ArmorStand::class.java
+            )
+            armorStand.isCustomNameVisible = true
+            armorStand.isVisible = false
+            armorStand.setGravity(false)
+            armorStand.customName = t.getTitleText()
+            armorStandMap[t]?.remove()
+            armorStandMap[t] = armorStand
+            return armorStand
+        }
+
+        /**
+         * Get CustomName with Triple
+         * @return Custom Name
+         */
+        fun Triple<Int, Int, Int>.getTitleText(): String {
+            return Configuring.configz.show_title_text
+                .replace("{x}", first.toString())
+                .replace("{y}", (second - 1).toString())
+                .replace("{z}", third.toString())
+                .replace("{can_use_number}", readFastFurnace(this).toString())
+        }
+
+        /**
+         * ReFlash the Title from location
+         */
+        fun Block.ReFlashTitle() {
+            val t = toTriple()
+            if (readFastFurnace(t) <= 0)
+                armorStandMap[t]?.remove()
+            armorStandMap[t]?.customName = t.getTitleText()
+        }
+
         init {
             FastFurnace.bigLoop = object : BukkitRunnable() {
                 override fun run() {
@@ -202,6 +250,7 @@ class FurnaceListener : Listener {
                                 } catch (e: Exception) {
                                 }
                             }
+                            block.ReFlashTitle()
                         }
                     }
                 }
@@ -245,11 +294,14 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onFastFurnacePlace(event: BlockPlaceEvent) {
         if (event.itemInHand.isFastFurnace()) {
-            createFastFurnace(event.block.toTriple(), event.itemInHand.getTheDurability())
-            val furnace = event.block.state as Furnace
+            val t = event.blockPlaced.toTriple()
+            createFastFurnace(event.blockPlaced.toTriple(), event.itemInHand.getTheDurability())
+            val furnace = event.blockPlaced.state as Furnace
             furnace.customName = Configuring.configz.custom_name
             furnace.burnTime = Short.MAX_VALUE
             furnace.update()
+            furnace.block.makeArmorStand()
+            furnace.block.ReFlashTitle()
         }
     }
 
@@ -267,9 +319,11 @@ class FurnaceListener : Listener {
                     readFastFurnace(t).toString()
                 )
             )
+            im.addEnchant(Enchantment.DURABILITY, if (readFastFurnace(t) > 10) 10 else readFastFurnace(t), true)
             itemStack.itemMeta = im
             removeFastFurnace(block.toTriple())
             block.Drop(itemStack)
+            block.ReFlashTitle()
         }
     }
 
