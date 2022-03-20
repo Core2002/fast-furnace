@@ -58,7 +58,6 @@ class FurnaceListener : Listener {
             fastFurnaceMap.remove(t)
         }
 
-
         /**
          * Return if the furnace is a  Fast Furnace
          * @return true or false
@@ -79,7 +78,7 @@ class FurnaceListener : Listener {
         private fun ItemStack.getTheDurability(): Int {
             if (!isFastFurnace())
                 throw RuntimeException("The type being operated is not a Fast Furnace")
-            return itemMeta!!.lore!![1]!!.toInt()
+            return itemMeta!!.lore!![1]!!.readLore2Int()
         }
 
         /**
@@ -89,7 +88,7 @@ class FurnaceListener : Listener {
         private fun ItemStack.setTheDurability(dur: Int) {
             if (!isFastFurnace())
                 throw RuntimeException("The type being operated is not a Fast Furnace")
-            itemMeta?.lore?.set(1, dur.toString())
+            itemMeta?.lore?.set(1, dur.makeLore2String())
         }
 
         /**
@@ -168,10 +167,23 @@ class FurnaceListener : Listener {
                     Configuring.configz.can_use_number.toString()
                 )
             )
-            im.lore = arrayListOf(Configuring.configz.lore_1, "${Configuring.configz.can_use_number}")
+            im.lore = arrayListOf(Configuring.configz.lore_1, Configuring.configz.can_use_number.makeLore2String())
             itemStack.itemMeta = im
             return itemStack
         }
+
+        /**
+         * Read Int from lore2
+         * @return can use number
+         */
+        fun String.readLore2Int() = replace(Configuring.configz.lore_2_prefix, "").toInt()
+
+        /**
+         * Make lore_2 with can_use_number
+         * @return lore_2 Text
+         */
+        fun Int.makeLore2String() = Configuring.configz.lore_2_prefix + this
+
     }
 
 //    @EventHandler
@@ -225,7 +237,7 @@ class FurnaceListener : Listener {
             val t = block.toTriple()
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf(Configuring.configz.lore_1, "${readFastFurnace(t)}")
+            im!!.lore = arrayListOf(Configuring.configz.lore_1, readFastFurnace(t).makeLore2String())
             im.setDisplayName(
                 Configuring.configz.display_name.replace(
                     "{can_use_number}",
