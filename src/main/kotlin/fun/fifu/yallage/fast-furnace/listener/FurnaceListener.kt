@@ -38,7 +38,16 @@ class FurnaceListener : Listener {
          * @return frequency
          */
         fun readFastFurnace(t: Triple<Int, Int, Int>): Int {
-            return fastFurnaceMap[t]?: 0
+            return fastFurnaceMap[t] ?: 0
+        }
+
+        /**
+         * Read Fast Furnace number from location for Player
+         * @param t the location
+         * @return frequency
+         */
+        fun readFastFurnace_Player(t: Triple<Int, Int, Int>): Int {
+            return fastFurnaceMap[t]?.minus(1) ?: 0
         }
 
         /**
@@ -47,7 +56,7 @@ class FurnaceListener : Listener {
          * @param frequency Fast Furnace 's frequency
          */
         fun createFastFurnace(t: Triple<Int, Int, Int>, frequency: Int) {
-            fastFurnaceMap[t] = frequency
+            fastFurnaceMap[t] = frequency.plus(1)
         }
 
         /**
@@ -224,7 +233,7 @@ class FurnaceListener : Listener {
                 .replace("{x}", first.toString())
                 .replace("{y}", (second - 1).toString())
                 .replace("{z}", third.toString())
-                .replace("{can_use_number}", readFastFurnace(this).toString())
+                .replace("{can_use_number}", readFastFurnace_Player(this).toString())
         }
 
         /**
@@ -323,14 +332,18 @@ class FurnaceListener : Listener {
             val t = block.toTriple()
             val itemStack = ItemStack(Material.FURNACE)
             val im = itemStack.itemMeta
-            im!!.lore = arrayListOf(Configuring.configz.lore_1, readFastFurnace(t).makeLore2String())
+            im!!.lore = arrayListOf(Configuring.configz.lore_1, readFastFurnace_Player(t).makeLore2String())
             im.setDisplayName(
                 Configuring.configz.display_name.replace(
                     "{can_use_number}",
-                    readFastFurnace(t).toString()
+                    readFastFurnace_Player(t).toString()
                 )
             )
-            im.addEnchant(Enchantment.DURABILITY, if (readFastFurnace(t) > 10) 10 else readFastFurnace(t), true)
+            im.addEnchant(
+                Enchantment.DURABILITY,
+                if (readFastFurnace_Player(t) > 10) 10 else readFastFurnace_Player(t),
+                true
+            )
             itemStack.itemMeta = im
             val furnace = block.state as Furnace
             furnace.inventory.smelting?.let { block.world.dropItem(block.location, it) }
