@@ -15,7 +15,6 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
@@ -39,7 +38,7 @@ class FurnaceListener : Listener {
          * @return frequency
          */
         fun readFastFurnace(t: Triple<Int, Int, Int>): Int {
-            return fastFurnaceMap[t]?.minus(1) ?: 0
+            return fastFurnaceMap[t]?: 0
         }
 
         /**
@@ -48,7 +47,7 @@ class FurnaceListener : Listener {
          * @param frequency Fast Furnace 's frequency
          */
         fun createFastFurnace(t: Triple<Int, Int, Int>, frequency: Int) {
-            fastFurnaceMap[t] = frequency + 1
+            fastFurnaceMap[t] = frequency
         }
 
         /**
@@ -56,7 +55,7 @@ class FurnaceListener : Listener {
          * @param t will location expend
          */
         fun expendFastFurnace(t: Triple<Int, Int, Int>) {
-            fastFurnaceMap[t] = fastFurnaceMap[t]?.minus(1) ?: 0
+            fastFurnaceMap[t] = fastFurnaceMap[t]!!.minus(1)
         }
 
         /**
@@ -105,10 +104,10 @@ class FurnaceListener : Listener {
          * Returns the durability of the Fast Furnace
          * @return durability
          */
-        private fun Block.getTheDurability(): Int? {
+        private fun Block.getTheDurability(): Int {
             if (!isFastFurnace())
                 throw RuntimeException("The type being operated is not a Fast Furnace")
-            return fastFurnaceMap[Triple(x, y, z)]
+            return readFastFurnace(Triple(x, y, z))
         }
 
         /**
@@ -130,15 +129,17 @@ class FurnaceListener : Listener {
          * Set the durability -1 of the Fast Furnace
          */
         fun Block.decrease() {
-            val dur = getTheDurability()!! - 1
-            if (dur > 0) {
-                setTheDurability(dur)
+            expendFastFurnace(toTriple())
+            if (getTheDurability() > 0) {
                 location.world?.playSound(location, Configuring.configz.sound_use, 16.0f, 16.0f)
             } else {
-                setTheDurability(0)
-                fastFurnaceMap.remove(Triple(x, y, z))
-                location.world?.playSound(location, Configuring.configz.sound_break, 16.0f, 16.0f)
+                removeFastFurnace(Triple(x, y, z))
+                val furnace = state as Furnace
+                furnace.inventory.smelting?.let { world.dropItem(location, it) }
+                furnace.inventory.result?.let { world.dropItem(location, it) }
+                furnace.inventory.fuel?.let { world.dropItem(location, it) }
                 type = Material.AIR
+                location.world?.playSound(location, Configuring.configz.sound_break, 16.0f, 16.0f)
             }
         }
 
@@ -148,7 +149,8 @@ class FurnaceListener : Listener {
          */
         private fun Block.Drop(itemStack: ItemStack) {
             type = Material.AIR
-            world.dropItem(location, itemStack)
+            if (itemStack.getTheDurability() > 0)
+                world.dropItem(location, itemStack)
         }
 
         /**
@@ -230,8 +232,8 @@ class FurnaceListener : Listener {
          */
         fun Block.ReFlashTitle() {
             val t = toTriple()
-            if (readFastFurnace(t) <= 0)
-                armorStandMap[t]?.remove()
+            if (readFastFurnace(t) == 0)
+                removeFastFurnace(t)
             armorStandMap[t]?.customName = t.getTitleText()
         }
 
@@ -267,12 +269,21 @@ class FurnaceListener : Listener {
 //        }
 //    }
 
-    @EventHandler
-    fun onInvOpen(event: InventoryOpenEvent) {
-        if (event.inventory.location?.block?.isFastFurnace() == true) {
-            val t = event.inventory.location?.block!!.toTriple()
-        }
-    }
+//    @EventHandler
+//    fun onInvOpen(event: InventoryOpenEvent) {
+//        val t = event.inventory.location?.block!!.toTriple()
+//        if (readFastFurnace(t) == 0 && event.inventory.location?.block?.isFastFurnace() == true) {
+//            event.inventory.location?.block!!.type = Material.AIR
+//        }
+//    }
+//
+//    @EventHandler
+//    fun onInvClose(event: InventoryCloseEvent) {
+//        val t = event.inventory.location?.block!!.toTriple()
+//        if (readFastFurnace(t) == 0 && event.inventory.location?.block?.isFastFurnace() == true) {
+//            event.inventory.location?.block!!.state.update()
+//        }
+//    }
 
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
@@ -321,6 +332,10 @@ class FurnaceListener : Listener {
             )
             im.addEnchant(Enchantment.DURABILITY, if (readFastFurnace(t) > 10) 10 else readFastFurnace(t), true)
             itemStack.itemMeta = im
+            val furnace = block.state as Furnace
+            furnace.inventory.smelting?.let { block.world.dropItem(block.location, it) }
+            furnace.inventory.result?.let { block.world.dropItem(block.location, it) }
+            furnace.inventory.fuel?.let { block.world.dropItem(block.location, it) }
             removeFastFurnace(block.toTriple())
             block.Drop(itemStack)
             block.ReFlashTitle()
