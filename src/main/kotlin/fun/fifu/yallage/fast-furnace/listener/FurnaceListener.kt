@@ -142,12 +142,12 @@ class FurnaceListener : Listener {
             if (getTheDurability() > 0) {
                 location.world?.playSound(location, Configuring.configz.sound_use, 16.0f, 16.0f)
             } else {
-                removeFastFurnace(Triple(x, y, z))
                 val furnace = state as Furnace
                 furnace.inventory.smelting?.let { world.dropItem(location, it) }
                 furnace.inventory.result?.let { world.dropItem(location, it) }
                 furnace.inventory.fuel?.let { world.dropItem(location, it) }
                 type = Material.AIR
+                removeFastFurnace(Triple(x, y, z))
                 location.world?.playSound(location, Configuring.configz.sound_break, 16.0f, 16.0f)
             }
         }
@@ -239,30 +239,46 @@ class FurnaceListener : Listener {
         /**
          * ReFlash the Title from location
          */
-        fun Block.ReFlashTitle() {
+        var tag = mutableMapOf<Triple<Int, Int, Int>, Int>()
+        fun Block.ReFlash() {
             val t = toTriple()
-            if (readFastFurnace(t) == 0)
+            if (readFastFurnace(t) <= 0)
                 removeFastFurnace(t)
             armorStandMap[t]?.customName = t.getTitleText()
+            tag[t] = tag[t] ?: 0
+            if (readFastFurnace(t) - 1 == 0) {
+                if (tag[t]!! > 10) {
+                    tag[t] = 0
+                    removeFastFurnace(t)
+                    val furnace = state as Furnace
+                    furnace.inventory.smelting?.let { world.dropItem(location, it) }
+                    furnace.inventory.result?.let { world.dropItem(location, it) }
+                    furnace.inventory.fuel?.let { world.dropItem(location, it) }
+                    type = Material.AIR
+                    println(t)
+                } else {
+                    tag[t] = tag[t]!!.plus(1)
+                }
+            }
         }
 
         init {
             FastFurnace.bigLoop = object : BukkitRunnable() {
                 override fun run() {
-                    fastFurnaceMap.forEach { (t, _) ->
-                        Bukkit.getWorlds().forEach {
-                            val block = it.getBlockAt(t.first, t.second, t.third)
-                            if (block.isFastFurnace()) {
-                                try {
+                    try {
+                        fastFurnaceMap.forEach { (t, _) ->
+                            Bukkit.getWorlds().forEach {
+                                val block = it.getBlockAt(t.first, t.second, t.third)
+                                if (block.isFastFurnace()) {
                                     val furnaceInventory = (block.state as Furnace).inventory
                                     val holder = furnaceInventory.holder!!
                                     holder.cookTime = 199
                                     holder.update(true, true)
-                                } catch (e: Exception) {
                                 }
+                                block.ReFlash()
                             }
-                            block.ReFlashTitle()
                         }
+                    } catch (e: Exception) {
                     }
                 }
             }.runTaskTimer(FastFurnace.plugin, 20, 1)
@@ -321,7 +337,7 @@ class FurnaceListener : Listener {
             furnace.burnTime = Short.MAX_VALUE
             furnace.update()
             furnace.block.makeArmorStand()
-            furnace.block.ReFlashTitle()
+            furnace.block.ReFlash()
         }
     }
 
@@ -351,7 +367,8 @@ class FurnaceListener : Listener {
             furnace.inventory.fuel?.let { block.world.dropItem(block.location, it) }
             removeFastFurnace(block.toTriple())
             block.Drop(itemStack)
-            block.ReFlashTitle()
+            block.ReFlash()
+            furnace.type = Material.AIR
         }
     }
 
