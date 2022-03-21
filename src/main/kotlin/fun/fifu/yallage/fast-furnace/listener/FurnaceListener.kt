@@ -255,7 +255,6 @@ class FurnaceListener : Listener {
                     furnace.inventory.result?.let { world.dropItem(location, it) }
                     furnace.inventory.fuel?.let { world.dropItem(location, it) }
                     type = Material.AIR
-                    println(t)
                 } else {
                     tag[t] = tag[t]!!.plus(1)
                 }
@@ -264,10 +263,15 @@ class FurnaceListener : Listener {
 
         init {
             FastFurnace.bigLoop = object : BukkitRunnable() {
+                var tag = 0
                 override fun run() {
                     try {
-                        fastFurnaceMap.forEach { (t, _) ->
-                            Bukkit.getWorlds().forEach {
+                        Bukkit.getWorlds().forEach {
+                            fastFurnaceMap.forEach { (t, _) ->
+                                if (++tag > 7) {
+                                    tag = 0
+                                    return@forEach
+                                }
                                 val block = it.getBlockAt(t.first, t.second, t.third)
                                 if (block.isFastFurnace()) {
                                     val furnaceInventory = (block.state as Furnace).inventory
