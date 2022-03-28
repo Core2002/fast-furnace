@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fun.fifu.yallage.fast-furnace</groupId>
-    <artifactId>FastFurnace</artifactId>
+    <artifactId>fast-furnace</artifactId>
     <version>1.0-NekokeCore</version>
     <packaging>jar</packaging>
 
