@@ -275,9 +275,11 @@ class FurnaceListener : Listener {
                                 val block = it.getBlockAt(t.first, t.second, t.third)
                                 if (block.isFastFurnace()) {
                                     val furnaceInventory = (block.state as Furnace).inventory
-                                    val holder = furnaceInventory.holder!!
-                                    holder.cookTime = 199
-                                    holder.update(true, true)
+                                    if (furnaceInventory.smelting != null) {
+                                        val holder = furnaceInventory.holder!!
+                                        holder.cookTime = 199
+                                        holder.update(true, true)
+                                    }
                                 }
                                 block.ReFlash()
                             }
