@@ -14,6 +14,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.FurnaceInventory
@@ -380,7 +381,7 @@ class FurnaceListener : Listener {
     }
 
     @EventHandler
-    fun onFastFurnaceExplode(event: BlockExplodeEvent) {
+    fun onFastFurnaceExplode(event: EntityExplodeEvent) {
         event.blockList().forEach {
             if (it.isFastFurnace()){
                 val block = it
