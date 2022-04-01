@@ -12,6 +12,7 @@ import org.bukkit.entity.ArmorStand
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -375,6 +376,41 @@ class FurnaceListener : Listener {
             block.Drop(itemStack)
             block.ReFlash()
             furnace.type = Material.AIR
+        }
+    }
+
+    @EventHandler
+    fun onFastFurnaceExplode(event: BlockExplodeEvent) {
+        event.blockList().forEach {
+            if (it.isFastFurnace()){
+                val block = it
+                if (block.isFastFurnace()) {
+                    val t = block.toTriple()
+                    val itemStack = ItemStack(Material.FURNACE)
+                    val im = itemStack.itemMeta
+                    im!!.lore = arrayListOf(Configuring.configz.lore_1, readFastFurnace_Player(t).makeLore2String())
+                    im.setDisplayName(
+                        Configuring.configz.display_name.replace(
+                            "{can_use_number}",
+                            readFastFurnace_Player(t).toString()
+                        )
+                    )
+                    im.addEnchant(
+                        Enchantment.DURABILITY,
+                        if (readFastFurnace_Player(t) > 10) 10 else readFastFurnace_Player(t),
+                        true
+                    )
+                    itemStack.itemMeta = im
+                    val furnace = block.state as Furnace
+                    furnace.inventory.smelting?.let { block.world.dropItem(block.location, it) }
+                    furnace.inventory.result?.let { block.world.dropItem(block.location, it) }
+                    furnace.inventory.fuel?.let { block.world.dropItem(block.location, it) }
+                    removeFastFurnace(block.toTriple())
+                    block.Drop(itemStack)
+                    block.ReFlash()
+                    furnace.type = Material.AIR
+                }
+            }
         }
     }
 
