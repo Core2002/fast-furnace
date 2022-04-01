@@ -214,13 +214,14 @@ class FurnaceListener : Listener {
         fun Block.makeArmorStand(): ArmorStand {
             val t = toTriple()
             val armorStand = world.spawn(
-                Location(world, t.first + 0.5, t.second - 0.5, t.third + 0.5),
+                Location(world, t.first + 0.5, t.second + 1.25, t.third + 0.5),
                 ArmorStand::class.java
             )
             armorStand.isCustomNameVisible = true
             armorStand.isVisible = false
             armorStand.setGravity(false)
             armorStand.customName = t.getTitleText()
+            armorStand.isMarker = true
             armorStandMap[t]?.remove()
             armorStandMap[t] = armorStand
             return armorStand
@@ -383,7 +384,7 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onFastFurnaceExplode(event: EntityExplodeEvent) {
         event.blockList().forEach {
-            if (it.isFastFurnace()){
+            if (it.isFastFurnace()) {
                 val block = it
                 if (block.isFastFurnace()) {
                     val t = block.toTriple()
