@@ -28,4 +28,10 @@ class Config {
 
     @SerializedName("show_title_text")
     val show_title_text = "§4快速熔炉 剩余{can_use_number}次"
+
+    @SerializedName("crafting_table_mode")
+    var crafting_table_mode = true
+
+    @SerializedName("synthesis_mapping")
+    var synthesisMapping:Map<String,String> = mapOf()
 }

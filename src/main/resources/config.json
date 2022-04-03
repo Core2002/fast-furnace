@@ -6,5 +6,9 @@
   "lore_2_prefix": "§e",
   "sound_use": "entity.wolf.pant",
   "sound_break": "entity.wolf.hurt",
-  "show_title_text": "§4快速熔炉 剩余{can_use_number}次"
+  "show_title_text": "§4快速熔炉 剩余{can_use_number}次",
+  "crafting_table_mode": true,
+  "synthesis_mapping": {
+    "BLUE_ICE": "TNT"
+  }
 }

@@ -1,6 +1,7 @@
 name: FastFurnace
 main: fun.fifu.yallage.fast-furnace.FastFurnace
 version: 1.0.2
+api-version: 1.17
 author: NekokeCore
 commands:
   fast-furnace:

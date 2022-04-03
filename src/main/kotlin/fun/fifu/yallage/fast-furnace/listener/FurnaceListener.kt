@@ -2,6 +2,7 @@ package `fun`.fifu.yallage.`fast-furnace`.listener
 
 import `fun`.fifu.yallage.`fast-furnace`.Configuring
 import `fun`.fifu.yallage.`fast-furnace`.FastFurnace
+import `fun`.fifu.yallage.`fast-furnace`.listener.FurnaceListener.Companion.isFastFurnace
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -266,22 +267,35 @@ class FurnaceListener : Listener {
 
         init {
             FastFurnace.bigLoop = object : BukkitRunnable() {
-                var tag = 0
                 override fun run() {
                     try {
                         Bukkit.getWorlds().forEach {
                             fastFurnaceMap.forEach { (t, _) ->
-                                if (++tag > 7) {
-                                    tag = 0
-                                    return@forEach
-                                }
                                 val block = it.getBlockAt(t.first, t.second, t.third)
                                 if (block.isFastFurnace()) {
                                     val furnaceInventory = (block.state as Furnace).inventory
                                     if (furnaceInventory.smelting != null) {
                                         val holder = furnaceInventory.holder!!
-                                        holder.cookTime = 199
-                                        holder.update(true, true)
+                                        if (Configuring.configz.crafting_table_mode) {
+                                            if (furnaceInventory.smelting != null && furnaceInventory.smelting!!.type != Material.AIR) {
+                                                furnaceInventory.result =
+                                                    Configuring.configz.synthesisMapping[furnaceInventory.smelting?.type?.name]?.let { s ->
+                                                        Material.getMaterial(s)?.let {
+                                                            val itemStack = ItemStack(it)
+                                                            itemStack.amount =
+                                                                furnaceInventory.smelting!!.amount + (furnaceInventory.result?.amount
+                                                                    ?: 0)
+                                                            furnaceInventory.smelting = null
+                                                            itemStack
+                                                        }
+                                                    }
+                                                holder.update(true, true)
+                                            }
+                                        } else {
+                                            holder.cookTime = 199
+                                            holder.update(true, true)
+                                        }
+
                                     }
                                 }
                                 block.ReFlash()
@@ -321,11 +335,33 @@ class FurnaceListener : Listener {
 
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
-        if (event.inventory.location!!.block.isFastFurnace() && event.slot <= 2) {
-            val furnaceInventory = event.inventory as FurnaceInventory
-            val holder = furnaceInventory.holder!!
-            holder.cookTime = 199
-            holder.update(true, true)
+        if (Configuring.configz.crafting_table_mode) {
+//            if (event.inventory.location!!.block.isFastFurnace() && event.slot == 1) {
+//                event.isCancelled = true
+//                return
+//            }
+            if (event.inventory.location!!.block.isFastFurnace() && event.slot == 0) {
+                val furnaceInventory = event.inventory as FurnaceInventory
+                if (furnaceInventory.smelting != null && furnaceInventory.smelting!!.type != Material.AIR) {
+                    furnaceInventory.result =
+                        Configuring.configz.synthesisMapping[furnaceInventory.smelting?.type?.name]?.let { s ->
+                            Material.getMaterial(s)?.let {
+                                val itemStack = ItemStack(it)
+                                itemStack.amount =
+                                    furnaceInventory.smelting!!.amount + (furnaceInventory.result?.amount ?: 0)
+                                furnaceInventory.smelting = null
+                                itemStack
+                            }
+                        }
+                }
+            }
+        } else {
+            if (event.inventory.location!!.block.isFastFurnace() && event.slot <= 2) {
+                val furnaceInventory = event.inventory as FurnaceInventory
+                val holder = furnaceInventory.holder!!
+                holder.cookTime = 199
+                holder.update(true, true)
+            }
         }
     }
 
