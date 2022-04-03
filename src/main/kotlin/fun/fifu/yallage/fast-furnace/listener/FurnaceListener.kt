@@ -18,6 +18,8 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryOpenEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.FurnaceInventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
@@ -317,13 +319,13 @@ class FurnaceListener : Listener {
 //        }
 //    }
 
-//    @EventHandler
-//    fun onInvOpen(event: InventoryOpenEvent) {
-//        val t = event.inventory.location?.block!!.toTriple()
-//        if (readFastFurnace(t) == 0 && event.inventory.location?.block?.isFastFurnace() == true) {
-//            event.inventory.location?.block!!.type = Material.AIR
-//        }
-//    }
+    @EventHandler
+    fun onInvOpen(event: InventoryOpenEvent) {
+        if (event.inventory.location?.block?.isFastFurnace() == true) {
+            val furnaceInventory = event.inventory as FurnaceInventory
+            furnaceInventory.fuel = ItemStack(Material.BARRIER)
+        }
+    }
 //
 //    @EventHandler
 //    fun onInvClose(event: InventoryCloseEvent) {
@@ -336,10 +338,11 @@ class FurnaceListener : Listener {
     @EventHandler
     fun onInvClick(event: InventoryClickEvent) {
         if (Configuring.configz.crafting_table_mode) {
-//            if (event.inventory.location!!.block.isFastFurnace() && event.slot == 1) {
-//                event.isCancelled = true
-//                return
-//            }
+            if (event.inventory.location!!.block.isFastFurnace() && event.slotType==InventoryType.SlotType.FUEL) {
+                val furnaceInventory = event.inventory as FurnaceInventory
+                if (furnaceInventory.fuel?.type == Material.BARRIER)
+                    event.isCancelled = true
+            }
             if (event.inventory.location!!.block.isFastFurnace() && event.slot == 0) {
                 val furnaceInventory = event.inventory as FurnaceInventory
                 if (furnaceInventory.smelting != null && furnaceInventory.smelting!!.type != Material.AIR) {
