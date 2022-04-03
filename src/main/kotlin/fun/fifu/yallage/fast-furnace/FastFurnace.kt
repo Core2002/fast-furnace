@@ -26,5 +26,8 @@ class FastFurnace : JavaPlugin() {
     override fun onDisable() {
         bigLoop.cancel()
         logger.info("Fast Furnace plugin is Disabled. Thinks for use :)")
+        FurnaceListener.fastFurnaceMap.forEach { (k, _) ->
+            FurnaceListener.removeFastFurnace(k)
+        }
     }
 }
